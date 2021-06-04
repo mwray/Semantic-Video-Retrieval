@@ -5,15 +5,19 @@ This repo contains code to evaluate for the semantic similarity video retrieval 
 * An optional script to create synset information using WordNet features.
 * A script to create the ground truth relevancy matrix from the four proxy measures listed in the paper: Bag of Words, Part of Speech, Synset, METEOR.
 
+More information about Semantic Similarity for Video Retrieval can be found on the [webpage](https://mwray.github.io/SSVR).
+
 ## Setup
 
 Python 3.8 was used with the following libraries:
-* Numpy
-* Pandas
-* Spacy
-* tqdm
-* nltk
 * argparse
+* ast
+* nltk
+* numpy
+* pandas
+* pathlib
+* spacy
+* tqdm
 * json (optional for the scripts but useful if reading in json files)
 
 ## Quick Start Guide
