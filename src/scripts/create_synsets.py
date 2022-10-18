@@ -83,7 +83,7 @@ def reverse_class_dict(classes):
     returns:
         (dict string -> string): reversed dictionary.
     '''
-    seen_elements set()
+    seen_elements = set()
     duplicates = defaultdict(lambda: [])
     for key, elements in classes.items():
         for element in elements:
