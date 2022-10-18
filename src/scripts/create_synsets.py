@@ -84,14 +84,15 @@ def reverse_class_dict(classes):
     returns:
         (dict string -> string): reversed dictionary.
     '''
-    seen_elements = set()
+    seen_elements = defaultdict(lambda: [])
     duplicates = defaultdict(lambda: [])
     for key, elements in classes.items():
         for element in elements:
             if element in seen_elements:
                 duplicates[element].append(key)
+                duplicates[element].append(seen_elements[element][-1])
             else:
-                seen_elements.add(element)
+                seen_elements[element].append(key)
     if len(duplicates) > 0:
         raise ValueError(
             "Values were present across multiple keys\n" + str(dict(duplicates))
