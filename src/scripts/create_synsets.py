@@ -6,6 +6,7 @@ import pandas as pd
 from ast import literal_eval
 from collections import defaultdict
 from nltk.wsd import lesk
+from nltk.stem import WordNetLemmatizer
 from pathlib import Path
 from tqdm import tqdm
 
@@ -99,7 +100,7 @@ def reverse_class_dict(classes):
     return {v: k for k in classes for v in classes[k]}
 
 
-def get_wn_synset(words, search_word, pos):
+def get_wn_synset(words, search_word, pos, lemmatiser):
     '''
     returns a WordNet synset of a search word based on the context of a
     sentence and a specific part of speech. If the synset cannot be found then
@@ -116,7 +117,8 @@ def get_wn_synset(words, search_word, pos):
                     search word, or if the synset cannot be found, the
                     search_word input arg.
     '''
-    synset = lesk(words, search_word, pos=pos)
+    search_word_lemma = lemmatiser.lemmatize(search_word, pos)
+    synset = lesk(words, search_word_lemma, pos=pos)
     if synset is not None:
         synset = synset.name()
     else:
@@ -124,7 +126,7 @@ def get_wn_synset(words, search_word, pos):
     return synset
 
 
-def get_dict_synset(search_word, word_to_syn_dict):
+def get_dict_synset(search_word, word_to_syn_dict, pos, lemmatiser):
     '''
     returns a synset of a word from the synset/class dictionary. If the synset
     cannot be found within the class/synset dictionary, then a new synset is
@@ -141,9 +143,10 @@ def get_dict_synset(search_word, word_to_syn_dict):
             dict string -> [string, int] Updated word_to_syn_dict
         )
     '''
-    if search_word not in word_to_syn_dict:
-        word_to_syn_dict[search_word] = len(word_to_syn_dict)
-    return word_to_syn_dict[search_word], word_to_syn_dict
+    search_word_lemma = lemmatiser.lemmatize(search_word, pos)
+    if search_word_lemma not in word_to_syn_dict:
+        word_to_syn_dict[search_word_lemma] = len(word_to_syn_dict)
+    return word_to_syn_dict[search_word_lemma], word_to_syn_dict
 
 
 def create_synsets(df, narration_col, word_col, pos, word_to_syn_dict=None):
@@ -177,14 +180,15 @@ def create_synsets(df, narration_col, word_col, pos, word_to_syn_dict=None):
     synsets_dict = {}
     sentence_word_tuples = zip(df[narration_col].values, df[word_col].values)
     indices = list(df.index)
+    lemmatiser = WordNetLemmatizer()
     for i, (sentence, search_words) in enumerate(sentence_word_tuples):
         words = sentence.split(' ')
         synset_set = set()
         for search_word in search_words:
             if word_to_syn_dict is None:
-                synset = get_wn_synset(words, search_word, pos)
+                synset = get_wn_synset(words, search_word, pos, lemmatiser)
             else:
-                synset, word_to_syn_dict = get_dict_synset(search_word, word_to_syn_dict)
+                synset, word_to_syn_dict = get_dict_synset(search_word, word_to_syn_dict, pos, lemmatiser)
             synset_set.add(synset)
         synsets_dict[indices[i]] = list(synset_set)
     return pd.Series(synsets_dict), word_to_syn_dict
